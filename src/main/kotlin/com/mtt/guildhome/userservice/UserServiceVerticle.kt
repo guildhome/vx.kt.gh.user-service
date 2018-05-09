@@ -9,6 +9,7 @@ import io.vertx.core.AsyncResult
 import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
+import io.vertx.core.logging.LoggerFactory
 import io.vertx.ext.mongo.MongoClient
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
@@ -16,7 +17,7 @@ import io.vertx.kotlin.core.json.JsonObject
 import io.vertx.kotlin.core.json.get
 
 class UserServiceVerticle : AbstractVerticle() {
-
+    val log = LoggerFactory.getLogger(UserServiceVerticle::class.java)
     override fun start(startFuture: Future<Void>?) {
         //the user service crud operation service
 
@@ -28,8 +29,10 @@ class UserServiceVerticle : AbstractVerticle() {
         //retrieve a singular user.
         //uses ?userId= or ?username=
         router.get("/v1/user").produces(HttpHeaderValues.APPLICATION_JSON.toString()).handler({ event ->
+
             val userId: String? = if (event.queryParam("userId").size > 0) event.queryParam("userId").first() else null
 
+            log.info("UserID: $userId")
             if (userId != null) {
                 userProfileRepository.readByUserProfileId(userId, Handler { result: AsyncResult<UserProfile> ->
                     if (result.succeeded()) {
@@ -42,11 +45,11 @@ class UserServiceVerticle : AbstractVerticle() {
                 val username: String? = if (event.queryParam("username").size > 0) event.queryParam("username").first() else null
 
                 if (username != null) {
-                    userProfileRepository.readByUserProfileId(username, Handler { result: AsyncResult<UserProfile> ->
+                    userProfileRepository.readByUserName(username, Handler { result: AsyncResult<UserProfile> ->
                         if (result.succeeded()) {
-                            event.response().end(result.result().toJson().toBuffer())
+                            event.response().setStatusCode(200).end(result.result().toJson().toBuffer())
                         } else {
-                            event.response().end(JsonObject("exception" to result.cause()).toBuffer())
+                            event.response().setStatusCode(500).end(JsonObject("exception" to result.cause()).toBuffer())
                         }
                     })
                 } else {
@@ -67,18 +70,18 @@ class UserServiceVerticle : AbstractVerticle() {
                     handler= Handler{ response ->
                         if(response.succeeded())
                         {
-                            event.response().setStatusCode(200).end()
+                            event.response().setStatusCode(200).end(response.result().toJson().toBuffer())
                         }
                         else
                         {
-                            event.response().setStatusCode(500).end(response.cause().message)
+                            event.response().setStatusCode(500).end(io.vertx.kotlin.core.json.JsonObject("error" to response.cause().message).toBuffer())
                         }
                     })
 
         })
 
 
-        server.requestHandler({ router.accept(it) }).listen(8080)
+        server.requestHandler({ router.accept(it) }).listen(8081)
         super.start(startFuture)
     }
 

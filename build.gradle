@@ -7,7 +7,7 @@ buildscript {
 
   dependencies {
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
   }
 }
 
@@ -21,10 +21,10 @@ repositories {
 }
 
 version = '0.0.1'
-group = 'guildhome_reverse_proxy'
+group = 'com.mtt.guildhome'
 sourceCompatibility = '1.8'
 mainClassName = 'io.vertx.core.Launcher'
-
+def mainVerticleName = 'com.mtt.guildhome.userservice.UserServiceVerticle'
 dependencies {
   compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
   compile 'io.vertx:vertx-core:3.5.1'
@@ -58,5 +58,12 @@ compileTestKotlin {
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '4.0'
+  gradleVersion = '4.5.1'
+}
+
+def watchForChange = 'src/**/*'
+def doOnChange = './gradlew classes'
+
+run {
+  args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
 }
