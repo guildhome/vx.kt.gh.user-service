@@ -35,11 +35,15 @@ class UserServiceVerticle : AbstractVerticle() {
                     obj("path" to "./config/config.json")
                 })
 
+
+        var envPropsStore = ConfigStoreOptions(
+                type = "env")
+
         var sysPropsStore = ConfigStoreOptions(
                 type = "sys")
 
         var options = ConfigRetrieverOptions(
-                stores = listOf(fileStore, sysPropsStore))
+                stores = listOf(fileStore,envPropsStore, sysPropsStore))
 
         var retriever = ConfigRetriever.create(vertx, options)
 
