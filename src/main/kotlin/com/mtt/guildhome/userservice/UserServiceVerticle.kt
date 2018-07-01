@@ -122,7 +122,7 @@ class UserServiceVerticle : AbstractVerticle() {
 
     private fun createMongoConfig(config: JsonObject): JsonObject = JsonObject("{\n" +
 //        "  // Single Cluster Settings\n" +
-            "  \"host\" : \"${config.getString("MONGO:HOST", "localhost")}\"," +
+            "  \"host\" : \"${config.getString("MONGO_HOST", "localhost")}\"," +
             "  \"port\" : 27017,\n" +
             " \"db_name\":\"guildhome\"" +
 //        "\n" +
